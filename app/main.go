@@ -8,18 +8,18 @@ import (
 )
 
 const (
-	SERVER_ADDRESS = "127.0.0.1"
-	PORT           = "2053"
+	DNServer_ADDRESS = "127.0.0.1"
+	PORT             = "2053"
 )
 
 func main() {
-	server := server.NewServer(SERVER_ADDRESS, PORT)
-	udpAddr, err := server.InitUDPEndpoint()
+	DNServer := server.NewDNServer(DNServer_ADDRESS, PORT)
+	udpAddr, err := DNServer.InitUDPEndpoint()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error while initialising UDP endpoint: %s", err)
 		return
 	}
-	server.ListenUDP(udpAddr)
+	err = DNServer.ListenUDP(udpAddr)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error while listening on UDP endpoint: %s", err)
 		return

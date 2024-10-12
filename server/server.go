@@ -5,22 +5,22 @@ import (
 	"net"
 )
 
-type Server struct {
+type DNServer struct {
 	address string
 	port    string
 }
 
-func NewServer(address, port string) *Server {
-	return &Server{address: address, port: port}
+func NewDNServer(address, port string) *DNServer {
+	return &DNServer{address: address, port: port}
 }
 
 // Initialise a UDP Address we can listen from
-func (s *Server) InitUDPEndpoint() (*net.UDPAddr, error) {
+func (s *DNServer) InitUDPEndpoint() (*net.UDPAddr, error) {
 	return net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%s", s.address, s.port))
 }
 
 // Listening on UDP Address and handles UDP connections and responses
-func (s *Server) ListenUDP(udpAddress *net.UDPAddr) error {
+func (s *DNServer) ListenUDP(udpAddress *net.UDPAddr) error {
 	udpConn, err := net.ListenUDP("udp", udpAddress)
 	if err != nil {
 		return err
@@ -31,7 +31,7 @@ func (s *Server) ListenUDP(udpAddress *net.UDPAddr) error {
 }
 
 // Read from the UDP Endpoint and send response
-func (s *Server) handleUDPEndpoint(udpConn net.UDPConn) error {
+func (s *DNServer) handleUDPEndpoint(udpConn net.UDPConn) error {
 	buf := make([]byte, 512)
 
 	for {
@@ -43,12 +43,16 @@ func (s *Server) handleUDPEndpoint(udpConn net.UDPConn) error {
 		receivedData := string(buf[:size])
 		fmt.Printf("Received %d bytes from %s: %s\n", size, source, receivedData)
 
-		// Create an empty response
-		response := []byte{}
+		response := createResponse()
 
 		_, err = udpConn.WriteToUDP(response, source)
 		if err != nil {
 			return err
 		}
 	}
+}
+
+func createResponse() []byte {
+	h := NewDNSHeader(1234, false, 0, true, true, true, true, 0, 0, 0, 0, 0, 0)
+	return h.Encode()
 }
