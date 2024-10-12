@@ -11,7 +11,7 @@ const (
 )
 
 // Log incoming or outgoing request in hexadecimal format, direction takes 0 for incoming and 1 for outgoing
-func LogRequest(data []byte, direction int) {
+func LogIOData(data []byte, direction int) {
 	x := hex.EncodeToString(data)
 	xclean := ""
 	for i, char := range x {

@@ -3,6 +3,8 @@ package server
 import (
 	"fmt"
 	"net"
+
+	"github.com/codecrafters-io/dns-server-starter-go/logger"
 )
 
 type DNServer struct {
@@ -42,9 +44,10 @@ func (s *DNServer) handleUDPEndpoint(udpConn net.UDPConn) error {
 		}
 
 		receivedData := string(buf[:size])
-		fmt.Printf("Received %d bytes from %s: %s\n", size, source, receivedData)
+		logger.LogIOData([]byte(receivedData), 0)
 
 		response := createResponse()
+		logger.LogIOData(response, 1)
 		_, err = udpConn.WriteToUDP(response, source)
 		if err != nil {
 			return err

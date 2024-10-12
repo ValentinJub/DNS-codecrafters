@@ -1,7 +1,5 @@
 package server
 
-import "encoding/binary"
-
 type DNSAnswer struct {
 	DNSQuestion
 	TTL    uint32
@@ -20,8 +18,10 @@ func NewDNSAnswer(question DNSQuestion, ttl uint32, len uint16, data []byte) *DN
 
 func (a *DNSAnswer) Encode() []byte {
 	b := a.DNSQuestion.Encode()
-	binary.BigEndian.AppendUint32(b, a.TTL)
-	binary.BigEndian.AppendUint16(b, a.Length)
+	bw := NewBitWriter(6)
+	bw.WriteBits(a.TTL, 32)
+	bw.WriteBits(uint32(a.Length), 16)
+	b = append(b, bw.Buffer()...)
 	b = append(b, a.Data...)
 	return b
 }
