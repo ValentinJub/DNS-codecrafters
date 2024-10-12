@@ -51,10 +51,9 @@ func (bw *BitWriter) Buffer() []byte {
 }
 
 func (bw *BitWriter) Write1Bit(value bool) {
-	var n uint32
-	// Set to 1 if the value is false, otherwise 0 is the default
+	n := uint32(1)
 	if !value {
-		n = 1
+		n = 0
 	}
 	err := bw.WriteBits(n, 1)
 	if err != nil {

@@ -43,10 +43,11 @@ func (s *DNServer) handleUDPEndpoint(udpConn net.UDPConn) error {
 			return err
 		}
 
-		receivedData := string(buf[:size])
+		receivedData := buf[:size]
 		logger.LogIOData([]byte(receivedData), 0)
+		header := DecodeDNSHeader(receivedData)
 
-		response := createResponse()
+		response := createResponse(*header)
 		logger.LogIOData(response, 1)
 		_, err = udpConn.WriteToUDP(response, source)
 		if err != nil {
@@ -55,8 +56,11 @@ func (s *DNServer) handleUDPEndpoint(udpConn net.UDPConn) error {
 	}
 }
 
-func createResponse() []byte {
-	h := NewDNSHeader(1234, false, 0, true, true, true, true, 0, 0, 1, 1, 0, 0)
+func createResponse(header DNSHeader) []byte {
+	if header.RecursionDesired {
+		fmt.Println("Recurssion is true")
+	}
+	h := NewDNSHeader(header.PacketIdentifier, true, header.OperationCode, false, true, header.RecursionDesired, true, 0, 4, 1, 1, 0, 0)
 	q := NewDNSQuestion("codecrafters.io", 1, 1)
 	a := NewDNSAnswer(*q, 60, 4, []byte{8, 8, 8, 8})
 	resp := append(h.Encode(), q.Encode()...)

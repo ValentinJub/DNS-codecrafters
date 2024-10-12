@@ -56,3 +56,22 @@ func (h *DNSHeader) Encode() []byte {
 	bw.Write16Bit(h.AdditionalCount)
 	return bw.Buffer()
 }
+
+func DecodeDNSHeader(data []byte) *DNSHeader {
+	br := NewBitReader(data)
+	return &DNSHeader{
+		PacketIdentifier:    uint16(br.ReadBits(16)),
+		QueryResponse:       br.ReadBits(1) != 0,
+		OperationCode:       uint8(br.ReadBits(4)),
+		AuthoritativeAnswer: br.ReadBits(1) != 0,
+		TruncatedMessage:    br.ReadBits(1) != 0,
+		RecursionDesired:    br.ReadBits(1) != 0,
+		RecursionAvailable:  br.ReadBits(1) != 0,
+		Reserved:            uint8(br.ReadBits(3)),
+		ResponseCode:        uint8(br.ReadBits(4)),
+		QuestionCount:       uint16(br.ReadBits(16)),
+		AnswerCount:         uint16(br.ReadBits(16)),
+		AuthorityCount:      uint16(br.ReadBits(16)),
+		AdditionalCount:     uint16(br.ReadBits(16)),
+	}
+}
