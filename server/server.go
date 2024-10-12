@@ -32,6 +32,7 @@ func (s *DNServer) ListenUDP(udpAddress *net.UDPAddr) error {
 
 // Read from the UDP Endpoint and send response
 func (s *DNServer) handleUDPEndpoint(udpConn net.UDPConn) error {
+	// Conventionally, DNS packets are sent using UDP transport and are limited to 512 bytes
 	buf := make([]byte, 512)
 
 	for {
@@ -44,7 +45,6 @@ func (s *DNServer) handleUDPEndpoint(udpConn net.UDPConn) error {
 		fmt.Printf("Received %d bytes from %s: %s\n", size, source, receivedData)
 
 		response := createResponse()
-
 		_, err = udpConn.WriteToUDP(response, source)
 		if err != nil {
 			return err
@@ -53,6 +53,7 @@ func (s *DNServer) handleUDPEndpoint(udpConn net.UDPConn) error {
 }
 
 func createResponse() []byte {
-	h := NewDNSHeader(1234, false, 0, true, true, true, true, 0, 0, 0, 0, 0, 0)
-	return h.Encode()
+	h := NewDNSHeader(1234, false, 0, true, true, true, true, 0, 0, 1, 0, 0, 0)
+	q := NewDNSQuestion("codecrafters.io", 1, 1)
+	return append(h.Encode(), q.Encode()...)
 }
