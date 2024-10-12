@@ -53,7 +53,9 @@ func (s *DNServer) handleUDPEndpoint(udpConn net.UDPConn) error {
 }
 
 func createResponse() []byte {
-	h := NewDNSHeader(1234, false, 0, true, true, true, true, 0, 0, 1, 0, 0, 0)
+	h := NewDNSHeader(1234, false, 0, true, true, true, true, 0, 0, 1, 1, 0, 0)
 	q := NewDNSQuestion("codecrafters.io", 1, 1)
-	return append(h.Encode(), q.Encode()...)
+	a := NewDNSAnswer(*q, 60, 4, []byte{8, 8, 8, 8})
+	resp := append(h.Encode(), q.Encode()...)
+	return append(resp, a.Encode()...)
 }
