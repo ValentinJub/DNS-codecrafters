@@ -20,6 +20,7 @@ func (q *DNSQuestion) Encode() []byte {
 	bw := NewBitWriter(4)
 	bw.Write16Bit(q.RecordType)
 	bw.Write16Bit(q.Class)
+	b = append(b, bw.buffer...)
 	return b
 }
 
