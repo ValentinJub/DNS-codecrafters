@@ -7,22 +7,22 @@ import (
 	"github.com/codecrafters-io/dns-server-starter-go/logger"
 )
 
-type DNServer struct {
+type Server struct {
 	address string
 	port    string
 }
 
-func NewDNServer(address, port string) *DNServer {
-	return &DNServer{address: address, port: port}
+func NewServer(address, port string) *Server {
+	return &Server{address: address, port: port}
 }
 
 // Initialise a UDP Address we can listen from
-func (s *DNServer) InitUDPEndpoint() (*net.UDPAddr, error) {
+func (s *Server) InitUDPEndpoint() (*net.UDPAddr, error) {
 	return net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%s", s.address, s.port))
 }
 
 // Listening on UDP Address and handles UDP connections and responses
-func (s *DNServer) ListenUDP(udpAddress *net.UDPAddr) error {
+func (s *Server) ListenUDP(udpAddress *net.UDPAddr) error {
 	udpConn, err := net.ListenUDP("udp", udpAddress)
 	if err != nil {
 		return err
@@ -33,7 +33,7 @@ func (s *DNServer) ListenUDP(udpAddress *net.UDPAddr) error {
 }
 
 // Read from the UDP Endpoint and send response
-func (s *DNServer) handleUDPEndpoint(udpConn net.UDPConn) error {
+func (s *Server) handleUDPEndpoint(udpConn net.UDPConn) error {
 	// Conventionally, DNS packets are sent using UDP transport and are limited to 512 bytes
 	buf := make([]byte, 512)
 
@@ -45,9 +45,10 @@ func (s *DNServer) handleUDPEndpoint(udpConn net.UDPConn) error {
 
 		receivedData := buf[:size]
 		logger.LogIOData([]byte(receivedData), 0)
-		header := DecodeDNSHeader(receivedData)
+		header := DecodeDNSHeader(receivedData) // Header should be 12 byte long
+		question := DecodeDNSQuestion(receivedData[12:])
 
-		response := createResponse(*header)
+		response := createResponse(*header, *question)
 		logger.LogIOData(response, 1)
 		_, err = udpConn.WriteToUDP(response, source)
 		if err != nil {
@@ -56,13 +57,12 @@ func (s *DNServer) handleUDPEndpoint(udpConn net.UDPConn) error {
 	}
 }
 
-func createResponse(header DNSHeader) []byte {
+func createResponse(header DNSHeader, question DNSQuestion) []byte {
 	if header.RecursionDesired {
 		fmt.Println("Recurssion is true")
 	}
 	h := NewDNSHeader(header.PacketIdentifier, true, header.OperationCode, false, true, header.RecursionDesired, true, 0, 4, 1, 1, 0, 0)
-	q := NewDNSQuestion("codecrafters.io", 1, 1)
-	a := NewDNSAnswer(*q, 60, 4, []byte{8, 8, 8, 8})
-	resp := append(h.Encode(), q.Encode()...)
+	a := NewDNSAnswer(question, 60, 4, []byte{8, 8, 8, 8})
+	resp := append(h.Encode(), question.Encode()...)
 	return append(resp, a.Encode()...)
 }

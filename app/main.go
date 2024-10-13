@@ -13,7 +13,7 @@ const (
 )
 
 func main() {
-	DNServer := server.NewDNServer(DNServer_ADDRESS, PORT)
+	DNServer := server.NewServer(DNServer_ADDRESS, PORT)
 	udpAddr, err := DNServer.InitUDPEndpoint()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error while initialising UDP endpoint: %s", err)
