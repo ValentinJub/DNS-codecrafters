@@ -11,7 +11,7 @@ const (
 )
 
 // Log incoming or outgoing request in hexadecimal format, direction takes 0 for incoming and 1 for outgoing
-func LogIOData(data []byte, direction int) {
+func LogIOData(data []byte, direction int, resolver bool) {
 	x := hex.EncodeToString(data)
 	xclean := ""
 	for i, char := range x {
@@ -23,8 +23,18 @@ func LogIOData(data []byte, direction int) {
 		xclean += string(char)
 	}
 	dir := "Outgoing"
+	opt := "to Client"
 	if direction == 0 {
 		dir = "Incoming"
+		opt = "from Client"
 	}
-	fmt.Printf("%s%sData (hex):\n%s%s\n\n", Pink, dir, xclean, Reset)
+	if resolver {
+		if direction == 0 {
+			dir = "Incoming"
+			opt = "from Resolver"
+		} else {
+			opt = "to Resolver"
+		}
+	}
+	fmt.Printf("%s%s data %s (hex):\n%s%s\n\n", Pink, dir, opt, xclean, Reset)
 }

@@ -2,8 +2,6 @@ package server
 
 import (
 	"bytes"
-	"encoding/binary"
-	"fmt"
 	"strings"
 )
 
@@ -24,41 +22,6 @@ func (q *DNSQuestion) Encode() []byte {
 	bw.Write16Bit(q.Class)
 	b = append(b, bw.buffer...)
 	return b
-}
-
-func DecodeDNSQuestion(data []byte) *DNSQuestion {
-	name, offset := decodeLabel(data)
-	typ := buffToInt16(data[offset+1 : offset+3])
-	class := buffToInt16(data[offset+3 : offset+5])
-	return NewDNSQuestion(name, uint16(typ), uint16(class))
-}
-
-func decodeLabel(data []byte) (string, int) {
-	sep := int(data[0])
-	str := ""
-	for x, c := range data[1:] {
-		if sep == 0 {
-			if c == '\x00' {
-				return str, x + 1
-			} else {
-				sep = int(c)
-				str += "."
-			}
-		} else {
-			str += string(c)
-			sep--
-		}
-	}
-	return "", -1
-}
-
-func buffToInt16(buff []byte) int16 {
-	var n int16
-	if err := binary.Read(bytes.NewReader(buff), binary.BigEndian, &n); err != nil {
-		fmt.Println(err)
-		return 0
-	}
-	return n
 }
 
 func encodeLabel(name string) []byte {

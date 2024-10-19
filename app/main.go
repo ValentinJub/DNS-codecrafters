@@ -14,6 +14,11 @@ const (
 
 func main() {
 	DNServer := server.NewServer(DNServer_ADDRESS, PORT)
+
+	if len(os.Args) >= 3 && os.Args[1] == "--resolver" {
+		DNServer.NewForwarder(os.Args[2])
+	}
+
 	udpAddr, err := DNServer.InitUDPEndpoint()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error while initialising UDP endpoint: %s", err)
